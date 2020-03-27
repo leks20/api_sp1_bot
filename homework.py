@@ -3,9 +3,10 @@ import time
 
 from dotenv import load_dotenv
 import requests
-from requests.exceptions import ConnectionError, \
-                                Timeout, RequestException, InvalidHeader, \
-                                InvalidURL, ProxyError, InvalidProxyURL
+from requests.exceptions import (
+    ConnectionError, Timeout, RequestException,
+    InvalidHeader, InvalidURL, ProxyError, InvalidProxyURL
+    )
 import telegram
 
 load_dotenv()
@@ -26,8 +27,9 @@ def parse_homework_status(homework):
     if homework['status'] == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
     else:
-        verdict = 'Ревьюеру всё понравилось, \
-                    можно приступать к следующему уроку.'
+        verdict = (
+            'Ревьюеру всё понравилось, можно приступать к следующему уроку.'
+            )
     return f'У вас проверили работу "{homework_name}"!\n\n{verdict}'
 
 
@@ -42,19 +44,25 @@ def get_homework_statuses(current_timestamp):
         return homework_statuses.json()
     except ProxyError:
         print("Ошибка прокси-сервера!")
+        return {}
     except ConnectionError:
-        print("Возникла ошибка соединения! \
-            Проверьте Ваше подключение к интернету.")
+        print("Возникла ошибка соединения! Проверьте Ваше подключение к интернету.")
+        return {}
     except Timeout:
         print("Время ожидания запроса истекло!")
+        return {}
     except InvalidProxyURL:
         print("Недопустимый URL-адрес прокси-сервера!")
+        return {}
     except InvalidURL:
         print("Недействительный URL-адрес!")
+        return {}
     except InvalidHeader:
         print("Недопустимое значение заголовка!")
+        return {}
     except RequestException:
         print("Что-то пошло не так...")
+        return {}
 
 
 def send_message(message):
@@ -67,25 +75,20 @@ def main():
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
-
-            if new_homework is None:
-                print('Через 1 минуту попробуем еще раз')
-                time.sleep(60)
-            else:
-                homeworks = new_homework.get('homeworks')
-                if homeworks:
-                    send_message(parse_homework_status(homeworks[0]))
-                current_timestamp = new_homework.get('current_date')
-                time.sleep(1200)  # опрашивать раз в 20 минут
+            homeworks = new_homework.get('homeworks', [])
+            if homeworks:
+                send_message(parse_homework_status(homeworks[0]))
+            current_timestamp = new_homework.get('current_date')
+            time.sleep(1200)  # опрашивать раз в 20 минут
 
         except KeyboardInterrupt:
             finish = input(
                 'Вы действительно хотите прервать работу бота? Y/N: '
                 )
-            if finish == 'Y' or finish == "y":
+            if finish in ('Y', 'y'):
                 print('До встречи!')
                 break
-            elif finish == 'N' or finish == "n":
+            elif finish in ('N', 'n'):
                 print('Продолжаем работать!')
 
         except Exception as e:
