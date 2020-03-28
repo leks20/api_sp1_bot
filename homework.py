@@ -39,30 +39,26 @@ def get_homework_statuses(current_timestamp):
     data = {
         'from_date': current_timestamp,
     }
+    result = {}
     try:
         homework_statuses = requests.get(url, params=data, headers=headers)
-        return homework_statuses.json()
+        result = homework_statuses.json()
     except ProxyError:
         print("Ошибка прокси-сервера!")
-        return {}
     except ConnectionError:
-        print("Возникла ошибка соединения! Проверьте Ваше подключение к интернету.")
-        return {}
+        print("Возникла ошибка соединения! \
+            Проверьте Ваше подключение к интернету.")
     except Timeout:
         print("Время ожидания запроса истекло!")
-        return {}
     except InvalidProxyURL:
         print("Недопустимый URL-адрес прокси-сервера!")
-        return {}
     except InvalidURL:
         print("Недействительный URL-адрес!")
-        return {}
     except InvalidHeader:
         print("Недопустимое значение заголовка!")
-        return {}
     except RequestException:
         print("Что-то пошло не так...")
-        return {}
+    return result
 
 
 def send_message(message):
